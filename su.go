@@ -62,9 +62,11 @@ func (osInstance *OS) loop(line string) {
 	strconf := true
 	for {
 		if line == "" {
-			fmt.Printf("%s:$ ", filepath.Base(osInstance.workDir))
+			fmt.Printf("\033[36m%s\033[0m\033[31m:\033[0m\033[32m$\033[0m ", filepath.Base(osInstance.workDir))
 			var err error
+			fmt.Print("\033[32m")
 			line, err = reader.ReadString('\n')
+			fmt.Print("\033[0m")
 			if err != nil {
 				fmt.Println()
 				break
@@ -83,19 +85,19 @@ func (osInstance *OS) loop(line string) {
 				if argv[1] == ".." {
 					parentDir := filepath.Dir(osInstance.workDir)
 					if osInstance.workDir == "fld\\Home" || osInstance.workDir == "Home" {
-						fmt.Println("su: go: You are already at the root directory")
+						fmt.Println("\033[31msu: go: You are already at the root directory\n\033[0m")
 					} else {
 						parentDirParts := strings.Split(parentDir, "\\")
 						if parentDirParts[len(parentDirParts)-1] != "fld" {
 							osInstance.workDir = parentDir
 						} else {
-							fmt.Println("su: go: You are already at the root directory")
+							fmt.Println("\033[31msu: go: You are already at the root directory\n\033[0m")
 						}
 					}
 				} else {
 					newDir := filepath.Join(osInstance.workDir, argv[1])
 					if _, err := os.Stat(newDir); os.IsNotExist(err) {
-						fmt.Printf("su: go: %s: No such file or directory\n", argv[1])
+						fmt.Printf("\033[31msu: go: %s: No such file or directory\n\033[0m", argv[1])
 					} else {
 						osInstance.workDir = newDir
 					}
@@ -106,7 +108,7 @@ func (osInstance *OS) loop(line string) {
 				if parentDirParts[len(parentDirParts)-1] != "fld" {
 					osInstance.workDir = parentDir
 				} else {
-					fmt.Println("su: go: You are already at the Home directory")
+					fmt.Println("\033[31msu: go: You are already at the root directory\n\033[0m")
 				}
 			} else if strings.ToLower(argv[0]) == "cat" && len(argv) > 1 {
 				if runtime.GOOS == "windows" {
@@ -117,7 +119,7 @@ func (osInstance *OS) loop(line string) {
 				filePath := filepath.Join(osInstance.workDir, argv[1])
 				data, err := ioutil.ReadFile(filePath)
 				if err != nil {
-					fmt.Printf("su: cat: %s: No such file or directory\n", argv[1])
+					fmt.Printf("\033[31msu: cat: %s: No such file or directory\n\033[0m", argv[1])
 				} else {
 					fmt.Println(string(data))
 				}
@@ -137,21 +139,21 @@ func (osInstance *OS) loop(line string) {
 				filePath := filepath.Join(osInstance.workDir, argv[0])
 				info, err := os.Stat(filePath)
 				if err != nil {
-					fmt.Printf("su: rm: %s: No such file or folder\n", argv[0])
+					fmt.Printf("\033[31msu: rm: %s: No such file or folder\n\033[0m", argv[0])
 				} else if info.IsDir() {
 					if forceDelete {
 						err := os.RemoveAll(filePath)
 						if err != nil {
-							fmt.Printf("su: rm: %s: Could not remove folder\n", argv[0])
+							fmt.Printf("\033[31msu: rm: %s: Could not remove folder\n\033[0m", argv[0])
 						}
 					} else {
 						files, err := filepath.Glob(filepath.Join(filePath, "*"))
 						if err != nil || len(files) > 0 {
-							fmt.Printf("su: rm: %s: folder is not empty\n", argv[0])
+							fmt.Printf("\033[31msu: rm: %s: folder is not empty\n\033[0m", argv[0])
 						} else {
 							err := os.Remove(filePath)
 							if err != nil {
-								fmt.Printf("su: rm: %s: Could not remove folder\n", argv[0])
+								fmt.Printf("\033[31msu: rm: %s: Could not remove folder\n\033[0m", argv[0])
 							}
 						}
 					}
@@ -159,20 +161,20 @@ func (osInstance *OS) loop(line string) {
 					if forceDelete {
 						err := os.Remove(filePath)
 						if err != nil {
-							fmt.Printf("su: rm: %s: Could not remove file\n", argv[0])
+							fmt.Printf("\033[31msu: rm: %s: Could not remove file\n\033[0m", argv[0])
 						}
 					} else {
-						fmt.Printf("su: rm: %s: use -f to force delete\n", argv[0])
+						fmt.Printf("\033[31msu: rm: %s: use -f to force delete\n\033[0m", argv[0])
 					}
 				}
 			} else if strings.ToLower(argv[0]) == "hold" && len(argv) > 1 {
 				newDir := filepath.Join(osInstance.workDir, argv[1])
 				if _, err := os.Stat(newDir); !os.IsNotExist(err) {
-					fmt.Printf("su: hold: %s: File exists\n", argv[1])
+					fmt.Printf("\033[31msu: hold: %s: File exists\n\033[0m", argv[1])
 				} else {
 					err := os.Mkdir(newDir, os.ModePerm)
 					if err != nil {
-						fmt.Printf("su: hold: %s: Could not create directory\n", argv[1])
+						fmt.Printf("\033[31msu: hold: %s: Could not create directory\n\033[0m", argv[1])
 					}
 				}
 			} else if strings.ToLower(argv[0]) == "touch" && len(argv) > 1 {
@@ -184,14 +186,14 @@ func (osInstance *OS) loop(line string) {
 				filePath := filepath.Join(osInstance.workDir, argv[1])
 				f, err := os.OpenFile(filePath, os.O_CREATE|os.O_WRONLY, 0666)
 				if err != nil {
-					fmt.Printf("su: touch: %s: Could not create file\n", filePath)
+					fmt.Printf("\033[31msu: touch: %s: Could not create file\n\033[0m", filePath)
 				} else {
 					f.Close()
 				}
 			} else if strings.ToLower(argv[0]) == "lf" {
 				files, err := filepath.Glob(filepath.Join(osInstance.workDir, "*"))
 				if err != nil {
-					fmt.Printf("su: lf: error listing files or folders\n")
+					fmt.Printf("\033[31msu: lf: error listing files or folders\n\033[0m")
 				} else {
 					for _, file := range files {
 						name := filepath.Base(file)
@@ -203,7 +205,7 @@ func (osInstance *OS) loop(line string) {
 			} else if strings.ToLower(argv[0]) == "pwf" {
 				relativePath, err := filepath.Rel(filepath.Join(osInstance.workDir, "..", "Home"), osInstance.workDir)
 				if err != nil {
-					fmt.Printf("su: pwf: error determining relative path\n")
+					fmt.Printf("\033[31msu: pwf: error determining relative path\n\033[0m")
 				} else {
 					fullPath := strings.Replace(filepath.Join(osInstance.workDir, relativePath), "\\", "/", -1)
 					firstHomeIndex := strings.Index(fullPath, "Home")
@@ -220,12 +222,12 @@ func (osInstance *OS) loop(line string) {
 					cmd.Stderr = os.Stderr
 					err := cmd.Run()
 					if err != nil {
-						fmt.Println(err)
+						fmt.Printf("\033[31msu: tx: error executing notepad.exe: %s\n\033[0m", err)
 					}
 				} else if runtime.GOOS == "linux" {
 					filePath := filepath.Join(osInstance.workDir, argv[1])
 					if _, err := os.Stat(filePath); os.IsNotExist(err) {
-						fmt.Printf("su: tx: %s: No such file\n", argv[1])
+						fmt.Printf("\033[31msu: tx: %s: No such file\n\033[0m", argv[1])
 					} else {
 						cmd := exec.Command("nano", filePath)
 						cmd.Stdin = os.Stdin
@@ -233,11 +235,11 @@ func (osInstance *OS) loop(line string) {
 						cmd.Stderr = os.Stderr
 						err := cmd.Run()
 						if err != nil {
-							fmt.Println(err)
+							fmt.Printf("\033[31msu: tx: error executing nano: %s\n\033[0m", err)
 						}
 					}
 				} else {
-					fmt.Println("Unsupported OS")
+					fmt.Println("\033[31mUnsupported OS\n\033[0m")
 				}
 			} else if strings.ToLower(argv[0]) == "time" {
 				ticker := time.NewTicker(1 * time.Second)
@@ -270,7 +272,7 @@ func (osInstance *OS) loop(line string) {
 					cmd.Stderr = os.Stderr
 					err := cmd.Run()
 					if err != nil {
-						fmt.Println("Error clearing screen:", err)
+						fmt.Printf("\033[31mError clearing screen: %s\n\033[0m", err)
 					}
 				} else {
 					cmd := exec.Command("clear")
@@ -278,17 +280,13 @@ func (osInstance *OS) loop(line string) {
 					cmd.Stderr = os.Stderr
 					err := cmd.Run()
 					if err != nil {
-						fmt.Println("Error clearing screen:", err)
+						fmt.Printf("\033[31mError clearing screen: %s\n\033[0m", err)
 					}
 				}
 			} else if strings.ToLower(argv[0]) == "rn" && len(argv) > 2 {
-				if len(argv) > 2 {
-					err := os.Rename(filepath.Join(osInstance.workDir, argv[1]), filepath.Join(osInstance.workDir, argv[2]))
-					if err != nil {
-						fmt.Println(err)
-					}
-				} else {
-					fmt.Println("Usage: rn <oldname> <newname>")
+				err := os.Rename(filepath.Join(osInstance.workDir, argv[1]), filepath.Join(osInstance.workDir, argv[2]))
+				if err != nil {
+					fmt.Printf("\033[31mError renaming: %s\n\033[0m", err)
 				}
 			} else if strings.ToLower(argv[0]) == "tell" && len(argv) > 1 {
 				fmt.Println(strings.Join(argv[1:], " "))
@@ -305,14 +303,14 @@ func (osInstance *OS) loop(line string) {
 					cmd.Stdin = os.Stdin
 					err := cmd.Run()
 					if err != nil && err.Error() != "exit status 9009" {
-						fmt.Println("Error opening cmd:", err)
+						fmt.Printf("\033[31mError opening cmd: %s\n\033[0m", err)
 					}
 					clr := exec.Command("cmd", "/c", "cls")
 					clr.Stdout = os.Stdout
 					clr.Stderr = os.Stderr
 					er := clr.Run()
 					if er != nil {
-						fmt.Println("Error clearing screen:", er)
+						fmt.Printf("\033[31mError clearing screen: %s\n\033[0m", er)
 					}
 				} else if runtime.GOOS == "linux" {
 					cmd := exec.Command("bash", "-c", "cd / && bash")
@@ -326,17 +324,17 @@ func (osInstance *OS) loop(line string) {
 					cmd.Stdin = os.Stdin
 					err := cmd.Run()
 					if err != nil && err.Error() != "exit status 127" && err.Error() != "exit status 130" {
-						fmt.Println("Error opening bash:", err)
+						fmt.Printf("\033[31mError opening bash: %s\n\033[0m", err)
 					}
 					clr := exec.Command("clear")
 					clr.Stdout = os.Stdout
 					clr.Stderr = os.Stderr
 					er := clr.Run()
 					if er != nil {
-						fmt.Println("Error clearing screen:", er)
+						fmt.Printf("\033[31mError clearing screen: %s\n\033[0m", er)
 					}
 				} else {
-					fmt.Println("Unsupported OS")
+					fmt.Println("\033[31mUnsupported OS\n\033[0m")
 				}
 			} else if strings.ToLower(argv[0]) == "neofech" && len(argv) > 1 {
 				fmt.Print("\n")
@@ -388,26 +386,26 @@ func (osInstance *OS) loop(line string) {
 				githubURL := fmt.Sprintf("https://api.github.com/repos/ArtikLamartik/compax-snowflake-lib/contents/%s?ref=main", argv[2])
 				resp, err := http.Get(githubURL)
 				if err != nil {
-					fmt.Println("Error getting contents:", err)
+					fmt.Printf("\033[31mError getting contents: %s\n\033[0m", err)
 					return
 				}
 				defer resp.Body.Close()
 				if resp.StatusCode != http.StatusOK {
-					fmt.Printf("Error getting contents: received status code %d\n", resp.StatusCode)
+					fmt.Printf("\033[31mError getting contents: received status code %d\n\033[0m", resp.StatusCode)
 					return
 				}
 
 				var contents []map[string]interface{}
 				err = json.NewDecoder(resp.Body).Decode(&contents)
 				if err != nil {
-					fmt.Println("Error decoding JSON:", err)
+					fmt.Printf("\033[31mError decoding JSON: %s\n\033[0m", err)
 					return
 				}
 
 				destDir := filepath.Join("fld", "SYSGO", "libs", argv[2])
 				err = os.MkdirAll(destDir, os.ModePerm)
 				if err != nil {
-					fmt.Println("Error creating directory:", err)
+					fmt.Printf("\033[31mError creating directory: %s\n\033[0m", err)
 					return
 				}
 
@@ -416,46 +414,45 @@ func (osInstance *OS) loop(line string) {
 						fileURL := file["download_url"].(string)
 						resp, err = http.Get(fileURL)
 						if err != nil {
-							fmt.Println("Error downloading file:", err)
+							fmt.Printf("\033[31mError downloading file: %s\n\033[0m", err)
 							return
 						}
 						defer resp.Body.Close()
 						if resp.StatusCode != http.StatusOK {
-							fmt.Printf("Error downloading file: received status code %d\n", resp.StatusCode)
+							fmt.Printf("\033[31mError downloading file: received status code %d\n\033[0m", resp.StatusCode)
 							return
 						}
 
 						filePath := filepath.Join(destDir, file["name"].(string))
 						f, err := os.Create(filePath)
 						if err != nil {
-							fmt.Println("Error creating file:", err)
+							fmt.Printf("\033[31mError creating file: %s\n\033[0m", err)
 							return
 						}
 						defer f.Close()
-
 						_, err = io.Copy(f, resp.Body)
 						if err != nil {
-							fmt.Println("Error writing to file:", err)
+							fmt.Printf("\033[31mError writing to file: %s\n\033[0m", err)
 							return
 						}
 					}
 				}
-				fmt.Println("Folder installed successfully.")
+				fmt.Printf("\033[32mFolder installed successfully.\n\033[0m")
 			} else if strings.ToLower(argv[0]) == "snowflake" && len(argv) == 3 && argv[1] == "-c" {
 				githubURL := fmt.Sprintf("https://raw.githubusercontent.com/ArtikLamartik/compax-snowflake-lib/main/%s/description.txt", argv[2])
 				resp, err := http.Get(githubURL)
 				if err != nil {
-					fmt.Println("Error fetching description:", err)
+					fmt.Printf("\033[31mError fetching description: %s\n\033[0m", err)
 				}
 				defer resp.Body.Close()
 				if resp.StatusCode != http.StatusOK {
-					fmt.Printf("Error fetching description: received status code %d\n", resp.StatusCode)
+					fmt.Printf("\033[31mError fetching description: received status code %d\n\033[0m", resp.StatusCode)
 				}
 				description, err := ioutil.ReadAll(resp.Body)
 				if err != nil {
-					fmt.Println("Error reading description:", err)
+					fmt.Printf("\033[31mError reading description: %s\n\033[0m", err)
 				}
-				fmt.Printf("Description to %s:\n", argv[2])
+				fmt.Printf("Description to %s:", argv[2])
 				fmt.Println()
 				descriptionLines := strings.Split(string(description), "\n")
 				for _, line := range descriptionLines {
@@ -469,7 +466,7 @@ func (osInstance *OS) loop(line string) {
 					cmd.Stderr = os.Stderr
 					err := cmd.Run()
 					if err != nil {
-						fmt.Println("Error running executable, try to restart the compax system:", err)
+						fmt.Printf("\033[31mError running executable, try to restart the compax system: %s\n\033[0m", err)
 					}
 				} else if runtime.GOOS == "linux" {
 					executablePath := filepath.Join("fld", "SYSGO", "libs", argv[2], argv[2])
@@ -478,14 +475,14 @@ func (osInstance *OS) loop(line string) {
 					cmd.Stderr = os.Stderr
 					err := cmd.Run()
 					if err != nil {
-						fmt.Println("Error running executable, try to restart the compax system:", err)
+						fmt.Printf("\033[31mError running executable, try to restart the compax system: %s\n\033[0m", err)
 					}
 				}
 			} else if strings.ToLower(argv[0]) == "snowflake" && len(argv) == 2 && argv[1] == "-l" {
 				libDir := filepath.Join("fld", "SYSGO", "libs")
 				files, err := os.ReadDir(libDir)
 				if err != nil {
-					fmt.Println("Error reading directory:", err)
+					fmt.Printf("\033[31mError reading directory: %s\n\033[0m", err)
 				}
 				fmt.Println("Available libraries:")
 				for _, file := range files {
@@ -497,26 +494,26 @@ func (osInstance *OS) loop(line string) {
 				libDir := filepath.Join("fld", "SYSGO", "libs", argv[2])
 				err := os.RemoveAll(libDir)
 				if err != nil {
-					fmt.Println("Error deleting library:", err)
+					fmt.Printf("\033[31mError deleting library: %s\n\033[0m", err)
 				} else {
-					fmt.Printf("Library %s deleted successfully.\n", argv[2])
+					fmt.Printf("\033[32mLibrary %s deleted successfully.\n\033[0m", argv[2])
 				}
 			} else if strings.ToLower(argv[0]) == "exit" {
 				os.Exit(0)
 			} else if strings.ToLower(argv[0]) == "adcom" && len(argv) >= 3 {
 				if argv[1] == "-a" {
 					if len(argv) < 4 {
-						fmt.Println("Error: please provide the command and the corresponding action.")
+						fmt.Println("\033[31mError: please provide the command and the corresponding action.\n\033[0m")
 					} else {
 						cmdsPath := filepath.Join("fld", "SYSGO", "cmds")
 						f, err := os.OpenFile(cmdsPath, os.O_RDWR|os.O_CREATE, 0666)
 						if err != nil {
-							fmt.Println("Error opening cmds file:", err)
+							fmt.Printf("\033[31mError opening cmds file: %s\n\033[0m", err)
 						} else {
 							defer f.Close()
 							data, err := ioutil.ReadFile(cmdsPath)
 							if err != nil {
-								fmt.Println("Error reading cmds file:", err)
+								fmt.Printf("\033[31mError reading cmds file: %s\n\033[0m", err)
 							} else {
 								commands := strings.Split(string(data), "\n")
 								command := fmt.Sprintf("%s: %s\n", argv[2], strings.Join(argv[3:], " "))
@@ -530,12 +527,12 @@ func (osInstance *OS) loop(line string) {
 								}
 								if !commandExists {
 									if _, err := f.WriteString(command); err != nil {
-										fmt.Println("Error writing to cmds file:", err)
+										fmt.Printf("\033[31mError writing to cmds file: %s\n\033[0m", err)
 									} else {
-										fmt.Printf("Command %s added successfully.\n", argv[2])
+										fmt.Printf("\033[32mCommand %s added successfully.\n\033[0m", argv[2])
 									}
 								} else {
-									fmt.Printf("Command with name %s already exists.\n", argv[2])
+									fmt.Printf("\033[31mCommand with name %s already exists.\n\033[0m", argv[2])
 								}
 							}
 						}
@@ -544,12 +541,12 @@ func (osInstance *OS) loop(line string) {
 					cmdsPath := filepath.Join("fld", "SYSGO", "cmds")
 					f, err := os.OpenFile(cmdsPath, os.O_WRONLY|os.O_CREATE, 0666)
 					if err != nil {
-						fmt.Println("Error opening cmds file:", err)
+						fmt.Printf("\033[31mError opening cmds file: %s\n\033[0m", err)
 					} else {
 						defer f.Close()
 						data, err := ioutil.ReadFile(cmdsPath)
 						if err != nil {
-							fmt.Println("Error reading cmds file:", err)
+							fmt.Printf("\033[31mError reading cmds file: %s\n\033[0m", err)
 						} else {
 							lines := strings.Split(string(data), "\n")
 							var updatedLines []string
@@ -561,9 +558,9 @@ func (osInstance *OS) loop(line string) {
 							}
 							err = ioutil.WriteFile(cmdsPath, []byte(strings.Join(updatedLines, "\n")), 0666)
 							if err != nil {
-								fmt.Println("Error writing to cmds file:", err)
+								fmt.Printf("\033[31mError writing to cmds file: %s\n\033[0m", err)
 							} else {
-								fmt.Printf("Command %s deleted successfully.\n", argv[2])
+								fmt.Printf("\033[32mCommand %s deleted successfully.\n\033[0m", argv[2])
 							}
 						}
 					}
@@ -572,7 +569,7 @@ func (osInstance *OS) loop(line string) {
 				cmdsPath := filepath.Join("fld", "SYSGO", "cmds")
 				data, err := ioutil.ReadFile(cmdsPath)
 				if err != nil {
-					fmt.Println("Error reading cmds file:", err)
+					fmt.Printf("\033[31mError reading cmds file: %s\n\033[0m", err)
 				} else {
 					lines := strings.Split(string(data), "\n")
 					for _, line := range lines {
@@ -583,7 +580,7 @@ func (osInstance *OS) loop(line string) {
 							}
 						}
 					}
-					fmt.Printf("su: %s: command not found\n", argv[0])
+					fmt.Printf("\033[31msu: %s: command not found\n\033[0m", argv[0])
 				}
 			}
 		}
@@ -597,7 +594,7 @@ func main() {
 		cmd.Stderr = os.Stderr
 		err := cmd.Run()
 		if err != nil {
-			fmt.Println("Error clearing screen:", err)
+			fmt.Printf("\033[31mError clearing screen: %s\n\033[0m", err)
 		}
 	} else {
 		cmd := exec.Command("clear")
@@ -605,7 +602,7 @@ func main() {
 		cmd.Stderr = os.Stderr
 		err := cmd.Run()
 		if err != nil {
-			fmt.Println("Error clearing screen:", err)
+			fmt.Printf("\033[31mError clearing screen: %s\n\033[0m", err)
 		}
 	}
 	osInstance := NewOS()
