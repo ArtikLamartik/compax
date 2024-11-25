@@ -565,6 +565,27 @@ func (osInstance *OS) loop(line string) {
 						}
 					}
 				}
+			} else if strings.HasPrefix(argv[0], "./") && strings.HasSuffix(argv[0], ".su") {
+				filePath, err := filepath.Abs(filepath.Join(osInstance.workDir, strings.TrimPrefix(argv[0], "./")))
+				if err != nil {
+					fmt.Printf("\033[31mError obtaining absolute path: %s\n\033[0m", err)
+				} else {
+					data, err := ioutil.ReadFile(filePath)
+					if err != nil {
+						fmt.Printf("\033[31mError reading file: %s\n\033[0m", err)
+					} else {
+						var updatedLines []string
+						for _, line := range strings.Split(string(data), "\n") {
+							if !strings.HasSuffix(line, ";") {
+								updatedLines = append(updatedLines, fmt.Sprintf("%s;", line))
+							} else {
+								updatedLines = append(updatedLines, line)
+							}
+						}
+						data = []byte(strings.Join(updatedLines, "\n"))
+						osInstance.loop(string(data))
+					}
+				}
 			} else {
 				cmdsPath := filepath.Join("fld", "SYSGO", "cmds")
 				data, err := ioutil.ReadFile(cmdsPath)
