@@ -58,6 +58,28 @@ func NewOS() *OS {
 }
 
 func (osInstance *OS) loop(line string) {
+	osInstance.setconf["go"] = "you give it a folder name and it goes there, if no argument it goes to the root folder, and .. goes to the last folder you were in"
+	osInstance.setconf["cat"] = "you give it a file name and it gives you the contents of the file"
+	osInstance.setconf["rm"] = "you give it a file name and it deletes the file, you can give it a -f flag to force delete, and -a flag to delete all files in the folder you are in"
+	osInstance.setconf["hold"] = "you give it a folder name and it creates the folder"
+	osInstance.setconf["touch"] = "you give it a file name and it creates the file"
+	osInstance.setconf["lf"] = "it lists the files in the folder you are in"
+	osInstance.setconf["pwf"] = "it prints the current working folder"
+	osInstance.setconf["tx"] = "it will use your text editor to edit the file you give the name as an argument"
+	osInstance.setconf["date"] = "it will print the date and the time"
+	osInstance.setconf["clear"] = "it clears the screen"
+	osInstance.setconf["cls"] = "it clears the screen"
+	osInstance.setconf["clrscr"] = "it clears the screen"
+	osInstance.setconf["clr"] = "it clears the screen"
+	osInstance.setconf["rn"] = "it renames the file you give the name as an argument to the second name you give it"
+	osInstance.setconf["tell"] = "it will print the argument you give it"
+	osInstance.setconf["mnt"] = "it open a the shell on your OS and if you type exit it will close the shell and also if you give the argument -kf it will open in the folder the executable is in"
+	osInstance.setconf["nefech"] = "it will create ascii art from text you give it"
+	osInstance.setconf["snowflake"] = "if you use -i it installes the next argument you gave it from github, if you use -c it will read the description of the next argument you gave it from github, if you use -d it will delete the next argument you gave it from github, if you use -r it will run the next argument you gave it, if it is installed"
+	osInstance.setconf["./"] = "it will run the next argument you gave it, if it is a su file from the Home folder"
+	osInstance.setconf["././"] = "it will run the next argument you gave it, if it is a su file from the folder you are in"
+	osInstance.setconf["caf"] = "it lists all the paths in the folder you are in"
+	osInstance.setconf["sf"] = "it searches for the next argument you gave it in the folder you are in"
 	reader := bufio.NewReader(os.Stdin)
 	strconf := true
 	for {
@@ -661,6 +683,18 @@ func (osInstance *OS) loop(line string) {
 				})
 				if err != nil {
 					fmt.Printf("\033[31mError walking the directory: %v\n\033[0m", err)
+				}
+			} else if strings.ToLower(argv[0]) == "help" {
+				if len(argv) > 1 {
+					if value, ok := osInstance.setconf[strings.ToLower(argv[1])]; ok {
+						fmt.Printf("%s\n", value)
+					} else {
+						fmt.Printf("\033[31mError: %s is not a valid option\n\033[0m", argv[1])
+					}
+				} else if len(argv) == 1 {
+					for key, value := range osInstance.setconf {
+						fmt.Printf("%s: %s\n", key, value)
+					}
 				}
 			} else {
 				cmdsPath := filepath.Join("fld", "SYSGO", "cmds")
