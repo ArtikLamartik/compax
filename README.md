@@ -1,3 +1,3 @@
-Update: -The rm Update
+Update: -The help Update
 
-Version 0.0.8
+Version 0.0.9
