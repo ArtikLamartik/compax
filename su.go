@@ -132,41 +132,35 @@ func (osInstance *OS) loop(line string) {
 					osInstance.workDir = strings.Replace(osInstance.workDir, "\\", "/", -1)
 				}
 				forceDelete := false
-				if len(argv) > 2 && argv[1] == "-f" {
-					forceDelete = true
-					argv = argv[2:]
-				} else {
-					argv = argv[1:]
+				all := false
+				for _, arg := range argv {
+					if strings.ToLower(arg) == "-f" {
+						forceDelete = true
+					}
+					if strings.ToLower(arg) == "-a" {
+						all = true
+					}
 				}
-				filePath := filepath.Join(osInstance.workDir, argv[0])
-				info, err := os.Stat(filePath)
-				if err != nil {
-					fmt.Printf("\033[31msu: rm: %s: No such file or folder\n\033[0m", argv[0])
-				} else if info.IsDir() {
-					if forceDelete {
-						err := os.RemoveAll(filePath)
-						if err != nil {
-							fmt.Printf("\033[31msu: rm: %s: Could not remove folder\n\033[0m", argv[0])
-						}
+				if all {
+					files, err := filepath.Glob(filepath.Join(osInstance.workDir, "*"))
+					if err != nil {
+						fmt.Printf("\033[31msu: rm: error getting files in folder\n\033[0m")
 					} else {
-						files, err := filepath.Glob(filepath.Join(filePath, "*"))
-						if err != nil || len(files) > 0 {
-							fmt.Printf("\033[31msu: rm: %s: folder is not empty\n\033[0m", argv[0])
-						} else {
-							err := os.Remove(filePath)
+						for _, file := range files {
+							err := os.RemoveAll(file)
 							if err != nil {
-								fmt.Printf("\033[31msu: rm: %s: Could not remove folder\n\033[0m", argv[0])
+								fmt.Printf("\033[31msu: rm: %s: Could not remove file/folder\n\033[0m", filepath.Base(file))
 							}
 						}
 					}
 				} else {
 					if forceDelete {
-						err := os.Remove(filePath)
+						err := os.RemoveAll(filepath.Join(osInstance.workDir, argv[1]))
 						if err != nil {
-							fmt.Printf("\033[31msu: rm: %s: Could not remove file\n\033[0m", argv[0])
+							fmt.Printf("\033[31msu: rm: %s: Could not remove file/folder\n\033[0m", argv[1])
 						}
 					} else {
-						fmt.Printf("\033[31msu: rm: %s: use -f to force delete\n\033[0m", argv[0])
+						fmt.Printf("\033[31msu: rm: %s: use -f to force delete\n\033[0m", argv[1])
 					}
 				}
 			} else if strings.ToLower(argv[0]) == "hold" && len(argv) > 1 {
