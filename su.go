@@ -78,7 +78,7 @@ func (osInstance *OS) loop(line string) {
 	osInstance.setconf["snowflake"] = "if you use -i it installes the next argument you gave it from github, if you use -c it will read the description of the next argument you gave it from github, if you use -d it will delete the next argument you gave it from github, if you use -r it will run the next argument you gave it, if it is installed"
 	osInstance.setconf["./"] = "it will run the next argument you gave it, if it is a su file from the Home folder"
 	osInstance.setconf["././"] = "it will run the next argument you gave it, if it is a su file from the folder you are in"
-	osInstance.setconf["caf"] = "it lists all the paths in the folder you are in"
+	osInstance.setconf["cap"] = "it lists all the paths in the folder you are in"
 	osInstance.setconf["sf"] = "it searches for the next argument you gave it in the folder you are in"
 	reader := bufio.NewReader(os.Stdin)
 	strconf := true
@@ -177,12 +177,20 @@ func (osInstance *OS) loop(line string) {
 					}
 				} else {
 					if forceDelete {
-						err := os.RemoveAll(filepath.Join(osInstance.workDir, argv[1]))
+						err := os.RemoveAll(filepath.Join(osInstance.workDir, argv[2]))
 						if err != nil {
-							fmt.Printf("\033[31msu: rm: %s: Could not remove file/folder\n\033[0m", argv[1])
+							fmt.Printf("\033[31msu: rm: %s: Could not remove file/folder\n\033[0m", argv[2])
 						}
 					} else {
-						fmt.Printf("\033[31msu: rm: %s: use -f to force delete\n\033[0m", argv[1])
+						err := os.Remove(filepath.Join(osInstance.workDir, argv[1]))
+						if err != nil {
+							if os.IsNotExist(err) {
+								fmt.Printf("\033[31msu: rm: %s: No such file or directory\n\033[0m", argv[1])
+							} else {
+								fmt.Print("\033[31msu: rm: Folder is not empty, use the -f to force delete\n\033[0m")
+							}
+						}
+
 					}
 				}
 			} else if strings.ToLower(argv[0]) == "hold" && len(argv) > 1 {
@@ -427,7 +435,6 @@ func (osInstance *OS) loop(line string) {
 							fmt.Printf("\033[31mError downloading file: received status code %d\n\033[0m", resp.StatusCode)
 							return
 						}
-
 						filePath := filepath.Join(destDir, file["name"].(string))
 						f, err := os.Create(filePath)
 						if err != nil {
@@ -618,8 +625,8 @@ func (osInstance *OS) loop(line string) {
 					}
 				}
 			} else if strings.ToLower(argv[0]) == "tsa" {
-				fmt.Println("\033[31m♥\033[0m")
-			} else if strings.ToLower(argv[0]) == "caf" {
+				fmt.Println("\033[31m♥\nurt\033[0m")
+			} else if strings.ToLower(argv[0]) == "cap" {
 				filepath.Walk(osInstance.workDir, func(path string, info os.FileInfo, err error) error {
 					if err != nil {
 						return err
