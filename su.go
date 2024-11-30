@@ -296,7 +296,7 @@ func (osInstance *OS) loop(line string) {
 				}
 			} else if argv[0] == "date" {
 				now := time.Now()
-				fmt.Printf("%02d/%02d/%04d\n%02d:%02d:%02d\n", now.Day(), now.Month(), now.Year(), now.Hour(), now.Minute(), now.Second())
+				fmt.Printf("\033[34m%02d/%02d/%04d\n%02d:%02d:%02d\n\033[0m", now.Day(), now.Month(), now.Year(), now.Hour(), now.Minute(), now.Second())
 			} else if strings.ToLower(argv[0]) == "clrscr" || strings.ToLower(argv[0]) == "cls" || strings.ToLower(argv[0]) == "clear" || strings.ToLower(argv[0]) == "clr" {
 				if runtime.GOOS == "windows" {
 					cmd := exec.Command("cmd", "/c", "cls")
@@ -640,7 +640,7 @@ func (osInstance *OS) loop(line string) {
 					}
 				}
 			} else if strings.ToLower(argv[0]) == "tsa" {
-				fmt.Println("\033[31m♥\nurt\033[0m")
+				fmt.Print("\033[31m♥\nurt\n\033[0m")
 			} else if strings.ToLower(argv[0]) == "cap" {
 				filepath.Walk(osInstance.workDir, func(path string, info os.FileInfo, err error) error {
 					if err != nil {
