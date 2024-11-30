@@ -120,7 +120,7 @@ func (osInstance *OS) loop(line string) {
 					newDir := filepath.Join(osInstance.workDir, argv[1])
 					if _, err := os.Stat(newDir); os.IsNotExist(err) {
 						fmt.Printf("\033[31msu: go: %s: No such file or directory\n\033[0m", argv[1])
-					} else {
+					} else if fi, err := os.Stat(newDir); err == nil && fi.Mode().IsDir() {
 						osInstance.workDir = newDir
 					}
 				}
@@ -553,7 +553,6 @@ func (osInstance *OS) loop(line string) {
 					if len(argv) < 3 {
 						fmt.Println("\033[31mError: please provide the command to delete.\033[0m")
 					} else {
-						
 						cmdsPath := filepath.Join("fld", "SYSGO", "cmds")
 						f, err := os.OpenFile(cmdsPath, os.O_WRONLY|os.O_CREATE, 0666)
 						if err != nil {
