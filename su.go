@@ -602,7 +602,7 @@ func (osInstance *OS) loop(line string) {
 				if strings.HasPrefix(argv[0], "././") {
 					filePath, err = filepath.Abs(filepath.Join(filepath.Dir(osInstance.workDir), filepath.Base(osInstance.workDir), strings.TrimPrefix(argv[0], "././")))
 				} else {
-					filePath, err = filepath.Abs(filepath.Join("fld\\Home", strings.TrimPrefix(argv[0], "./")))
+					filePath, err = filepath.Abs(filepath.Join("fld/Home", strings.TrimPrefix(argv[0], "./")))
 				}
 				if err != nil {
 					fmt.Printf("\033[31mError obtaining absolute path: %s\n\033[0m", err)
