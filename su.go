@@ -235,7 +235,23 @@ func (osInstance *OS) loop(line string) {
 							typef = "su file"
 						}
 						if _, err := os.Stat(file); err == nil {
-							fmt.Printf("\033[32m[ %s ] \033[36m%s\033[0m\n", typef, name)
+							last_modified := fileInfo.ModTime().Format("02 Jan 2006 15:04:05")
+							var folderSize int64
+							err := filepath.Walk(file, func(path string, info os.FileInfo, err error) error {
+								if err != nil {
+									return err
+								}
+								if !info.IsDir() {
+									folderSize += info.Size()
+								}
+								return nil
+							})
+							if err != nil {
+								fmt.Printf("\033[31msu: lf: error getting folder size for %s\n\033[0m", name)
+								continue
+							}
+							space := fmt.Sprintf("%d bytes", folderSize)
+							fmt.Printf("\033[32m[ %s ] \033[36m%s \033[34m{ %s } \033[35m( %s )\n\033[0m", typef, name, last_modified, space)
 						}
 					}
 				}
@@ -637,11 +653,56 @@ func (osInstance *OS) loop(line string) {
 						return err
 					}
 					if info.IsDir() && relativePath != "." {
-						fmt.Printf("\033[32m[ folder ] \033[36mHome/%s\n\033[0m", relativePath)
+						var folderSize int64
+						err := filepath.Walk(path, func(filePath string, info os.FileInfo, err error) error {
+							if err != nil {
+								return err
+							}
+							if !info.IsDir() {
+								folderSize += info.Size()
+							}
+							return nil
+						})
+						if err != nil {
+							fmt.Printf("\033[31msu: lf: error getting folder size for %s: %v\n\033[0m", relativePath, err)
+						}
+						space := fmt.Sprintf("%d bytes", folderSize)
+						last_modified := info.ModTime().Format("02 Jan 2006 15:04:05")
+						fmt.Printf("\033[32m[ folder ] \033[36m%s \033[34m{ %s } \033[35m( %s )\n\033[0m", relativePath, last_modified, space)
 					} else if strings.HasSuffix(relativePath, ".su") {
-						fmt.Printf("\033[32m[ su file ] \033[36mHome/%s\n\033[0m", relativePath)
+						var folderSize int64
+						err := filepath.Walk(path, func(filePath string, info os.FileInfo, err error) error {
+							if err != nil {
+								return err
+							}
+							if !info.IsDir() {
+								folderSize += info.Size()
+							}
+							return nil
+						})
+						if err != nil {
+							fmt.Printf("\033[31msu: lf: error getting folder size for %s: %v\n\033[0m", relativePath, err)
+						}
+						space := fmt.Sprintf("%d bytes", folderSize)
+						last_modified := info.ModTime().Format("02 Jan 2006 15:04:05")
+						fmt.Printf("\033[32m[ su file ] \033[36m%s \033[34m{ %s } \033[35m( %s )\n\033[0m", relativePath, last_modified, space)
 					} else if relativePath != "." {
-						fmt.Printf("\033[32m[ file ] \033[36mHome/%s\n\033[0m", relativePath)
+						var folderSize int64
+						err := filepath.Walk(path, func(filePath string, info os.FileInfo, err error) error {
+							if err != nil {
+								return err
+							}
+							if !info.IsDir() {
+								folderSize += info.Size()
+							}
+							return nil
+						})
+						if err != nil {
+							fmt.Printf("\033[31msu: lf: error getting folder size for %s: %v\n\033[0m", relativePath, err)
+						}
+						space := fmt.Sprintf("%d bytes", folderSize)
+						last_modified := info.ModTime().Format("02 Jan 2006 15:04:05")
+						fmt.Printf("\033[32m[ file ] \033[36m%s \033[34m{ %s } \033[35m( %s )\n\033[0m", relativePath, last_modified, space)
 					}
 					return nil
 				})
@@ -661,11 +722,56 @@ func (osInstance *OS) loop(line string) {
 						relativePath = strings.TrimPrefix(relativePath, "Home"+string(os.PathSeparator))
 						relativePath = strings.ReplaceAll(relativePath, "\\", "/")
 						if info.IsDir() {
-							fmt.Printf("\033[32m[ folder ] \033[36mHome/%s\n\033[0m", relativePath)
+							var folderSize int64
+							err := filepath.Walk(path, func(filePath string, info os.FileInfo, err error) error {
+								if err != nil {
+									return err
+								}
+								if !info.IsDir() {
+									folderSize += info.Size()
+								}
+								return nil
+							})
+							if err != nil {
+								fmt.Printf("\033[31msu: lf: error getting folder size for %s: %v\n\033[0m", relativePath, err)
+							}
+							space := fmt.Sprintf("%d bytes", folderSize)
+							last_modified := info.ModTime().Format("02 Jan 2006 15:04:05")
+							fmt.Printf("\033[32m[ folder ] \033[36m/%s \033[34m{ %s } \033[35m( %s )\n\033[0m", relativePath, last_modified, space)
 						} else if strings.HasSuffix(relativePath, ".su") {
-							fmt.Printf("\033[32m[ su file ] \033[36mHome/%s\n\033[0m", relativePath)
+							var folderSize int64
+							err := filepath.Walk(path, func(filePath string, info os.FileInfo, err error) error {
+								if err != nil {
+									return err
+								}
+								if !info.IsDir() {
+									folderSize += info.Size()
+								}
+								return nil
+							})
+							if err != nil {
+								fmt.Printf("\033[31msu: lf: error getting folder size for %s: %v\n\033[0m", relativePath, err)
+							}
+							space := fmt.Sprintf("%d bytes", folderSize)
+							last_modified := info.ModTime().Format("02 Jan 2006 15:04:05")
+							fmt.Printf("\033[32m[ su file ] \033[36m%s \033[34m{ %s } \033[35m( %s )\n\033[0m", relativePath, last_modified, space)
 						} else {
-							fmt.Printf("\033[32m[ file ] \033[36mHome/%s\n\033[0m", relativePath)
+							var folderSize int64
+							err := filepath.Walk(path, func(filePath string, info os.FileInfo, err error) error {
+								if err != nil {
+									return err
+								}
+								if !info.IsDir() {
+									folderSize += info.Size()
+								}
+								return nil
+							})
+							if err != nil {
+								fmt.Printf("\033[31msu: lf: error getting folder size for %s: %v\n\033[0m", relativePath, err)
+							}
+							space := fmt.Sprintf("%d bytes", folderSize)
+							last_modified := info.ModTime().Format("02 Jan 2006 15:04:05")
+							fmt.Printf("\033[32m[ file ] \033[36m%s \033[34m{ %s } \033[35m( %s )\n\033[0m", relativePath, last_modified, space)
 						}
 					}
 					if !info.IsDir() {
