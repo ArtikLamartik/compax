@@ -104,7 +104,7 @@ func (osInstance *OS) loop(line string) {
 				continue
 			}
 			if strings.ToLower(argv[0]) == "go" && len(argv) > 1 {
-				if argv[1] == ".." {
+				if strings.HasSuffix(argv[1], "..") {
 					parentDir := filepath.Dir(osInstance.workDir)
 					if osInstance.workDir == "fld\\Home" || osInstance.workDir == "Home" {
 						fmt.Println("\033[31msu: go: You are already at the root directory\033[0m")
