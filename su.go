@@ -28,9 +28,9 @@ func init() {
 			os.Mkdir(completePath, os.ModePerm)
 		}
 	}
-	cmdsfile := filepath.Join(fldPath, "SYSGO", "cmds")
-	if _, err := os.Stat(cmdsfile); os.IsNotExist(err) {
-		f, err := os.OpenFile(cmdsfile, os.O_CREATE|os.O_WRONLY, 0666)
+	wossfile := filepath.Join(fldPath, "SYSGO", "woss.su")
+	if _, err := os.Stat(wossfile); os.IsNotExist(err) {
+		f, err := os.OpenFile(wossfile, os.O_CREATE|os.O_WRONLY, 0666)
 		if err != nil {
 			fmt.Println(err)
 		}
@@ -268,7 +268,34 @@ func (osInstance *OS) loop(line string) {
 					fmt.Printf("\033[36m%s\033[0m\n", fullPath)
 				}
 			} else if strings.ToLower(argv[0]) == "tx" && len(argv) > 1 {
-				if runtime.GOOS == "windows" {
+				if argv[1] == "./woss.su" {
+					if runtime.GOOS == "windows" {
+						cmd := exec.Command("notepad.exe", "fld\\SYSGO\\woss.su")
+						cmd.Stdin = os.Stdin
+						cmd.Stdout = os.Stdout
+						cmd.Stderr = os.Stderr
+						err := cmd.Run()
+						if err != nil {
+							fmt.Printf("\033[31msu: tx: error executing notepad.exe: %s\n\033[0m", err)
+						}
+					} else if runtime.GOOS == "linux" {
+						filePath := filepath.Join("fld\\SYSGO\\woss.su")
+						if _, err := os.Stat(filePath); os.IsNotExist(err) {
+							fmt.Printf("\033[31msu: tx: %s: No such file\n\033[0m", argv[1])
+						} else {
+							cmd := exec.Command("nano", filePath)
+							cmd.Stdin = os.Stdin
+							cmd.Stdout = os.Stdout
+							cmd.Stderr = os.Stderr
+							err := cmd.Run()
+							if err != nil {
+								fmt.Printf("\033[31msu: tx: error executing nano: %s\n\033[0m", err)
+							}
+						}
+					} else {
+						fmt.Println("\033[31mUnsupported OS\033[0m")
+					}
+				} else if runtime.GOOS == "windows" {
 					cmd := exec.Command("notepad.exe", fmt.Sprintf("%s\\%s", strings.ReplaceAll(osInstance.workDir, "\\", "/"), argv[1]))
 					cmd.Stdin = os.Stdin
 					cmd.Stdout = os.Stdout
@@ -528,91 +555,24 @@ func (osInstance *OS) loop(line string) {
 				}
 			} else if strings.ToLower(argv[0]) == "exit" {
 				os.Exit(0)
-			} else if strings.ToLower(argv[0]) == "adcom" && len(argv) >= 2 {
-				if argv[1] == "-a" {
-					if len(argv) < 4 {
-						fmt.Println("\033[31mError: please provide the command and the corresponding action.\033[0m")
-					} else {
-						cmdsPath := filepath.Join("fld", "SYSGO", "cmds")
-						f, err := os.OpenFile(cmdsPath, os.O_RDWR|os.O_CREATE, 0666)
-						if err != nil {
-							fmt.Printf("\033[31mError opening cmds file: %s\n\033[0m", err)
-						} else {
-							defer f.Close()
-							data, err := ioutil.ReadFile(cmdsPath)
-							if err != nil {
-								fmt.Printf("\033[31mError reading cmds file: %s\n\033[0m", err)
-							} else {
-								commands := strings.Split(string(data), "\n")
-								command := fmt.Sprintf("%s: %s\n", argv[2], strings.Join(argv[3:], " "))
-								var commandExists bool
-								for _, cmd := range commands {
-									cmdParts := strings.SplitN(cmd, ":", 2)
-									if len(cmdParts) > 0 && cmdParts[0] == argv[2] {
-										commandExists = true
-										break
-									}
-								}
-								if !commandExists {
-									if _, err := f.WriteString(command); err != nil {
-										fmt.Printf("\033[31mError writing to cmds file: %s\n\033[0m", err)
-									} else {
-										fmt.Printf("\033[32mCommand %s added successfully.\n\033[0m", argv[2])
-									}
-								} else {
-									fmt.Printf("\033[31mCommand with name %s already exists.\n\033[0m", argv[2])
-								}
-							}
-						}
-					}
-				} else if argv[1] == "-d" {
-					if len(argv) < 3 {
-						fmt.Println("\033[31mError: please provide the command to delete.\033[0m")
-					} else {
-						cmdsPath := filepath.Join("fld", "SYSGO", "cmds")
-						f, err := os.OpenFile(cmdsPath, os.O_WRONLY|os.O_CREATE, 0666)
-						if err != nil {
-							fmt.Printf("\033[31mError opening cmds file: %s\n\033[0m", err)
-						} else {
-							defer f.Close()
-							data, err := ioutil.ReadFile(cmdsPath)
-							if err != nil {
-								fmt.Printf("\033[31mError reading cmds file: %s\n\033[0m", err)
-							} else {
-								lines := strings.Split(string(data), "\n")
-								var updatedLines []string
-								command := fmt.Sprintf("%s:", argv[2])
-								for _, line := range lines {
-									if !strings.HasPrefix(line, command) {
-										updatedLines = append(updatedLines, line)
-									}
-								}
-								err = ioutil.WriteFile(cmdsPath, []byte(strings.Join(updatedLines, "\n")), 0666)
-								if err != nil {
-									fmt.Printf("\033[31mError writing to cmds file: %s\n\033[0m", err)
-								} else {
-									fmt.Printf("\033[32mCommand %s deleted successfully.\n\033[0m", argv[2])
-								}
-							}
-						}
-					}
-				} else if argv[1] == "-c" {
-					cmdsPath := filepath.Join("fld", "SYSGO", "cmds")
-					data, err := ioutil.ReadFile(cmdsPath)
+			} else if strings.HasPrefix(argv[0], "./") && strings.HasSuffix(argv[0], ".su") {
+				if argv[0] == "./woss.su" {
+					data, err := ioutil.ReadFile(filepath.Join("fld", "SYSGO", "woss.su"))
 					if err != nil {
-						fmt.Printf("\033[31mError reading cmds file: %s\n\033[0m", err)
+						fmt.Printf("\033[31mError reading file: %s\n\033[0m", err)
 					} else {
-						lines := strings.Split(string(data), "\n")
-						fmt.Println("Available commands:")
-						for _, line := range lines {
-							cmdParts := strings.SplitN(line, ":", 2)
-							if len(cmdParts) > 1 {
-								fmt.Printf("%s : %s\n", cmdParts[0], cmdParts[1])
+						var updatedLines []string
+						for _, line := range strings.Split(string(data), "\n") {
+							if !strings.HasSuffix(line, ";") {
+								updatedLines = append(updatedLines, fmt.Sprintf("%s;", line))
+							} else {
+								updatedLines = append(updatedLines, line)
 							}
 						}
+						data = []byte(strings.Join(updatedLines, "\n"))
+						osInstance.loop(string(data))
 					}
 				}
-			} else if strings.HasPrefix(argv[0], "./") && strings.HasSuffix(argv[0], ".su") {
 				var filePath string
 				var err error
 				if strings.HasPrefix(argv[0], "././") {
@@ -809,22 +769,7 @@ func (osInstance *OS) loop(line string) {
 					}
 				}
 			} else {
-				cmdsPath := filepath.Join("fld", "SYSGO", "cmds")
-				data, err := ioutil.ReadFile(cmdsPath)
-				if err != nil {
-					fmt.Printf("\033[31mError reading cmds file: %s\n\033[0m", err)
-				} else {
-					lines := strings.Split(string(data), "\n")
-					for _, line := range lines {
-						if strings.HasPrefix(line, fmt.Sprintf("%s:", strings.ToLower(argv[0]))) {
-							inputParts := strings.SplitN(line, ": ", 2)
-							if len(inputParts) > 1 {
-								osInstance.loop(inputParts[1])
-							}
-						}
-					}
-					fmt.Printf("\033[31msu: %s: command not found\n\033[0m", argv[0])
-				}
+				fmt.Printf("\033[31msu: %s: command not found\n\033[0m", argv[0])
 			}
 		}
 	}
@@ -849,5 +794,5 @@ func main() {
 		}
 	}
 	osInstance := NewOS()
-	osInstance.loop("")
+	osInstance.loop("./woss.su")
 }
